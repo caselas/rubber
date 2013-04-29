@@ -7,7 +7,7 @@ module Rubber
   module Commands
 
     class Vulcanize < Clamp::Command
-      
+
       def self.subcommand_name
         "vulcanize"
       end
@@ -15,7 +15,7 @@ module Rubber
       def self.subcommand_description
         "Installs rubber templates into project"
       end
-      
+
       def self.description
         # Format templates into comma-separated paragraph with limt of 70 characters per line
         lines = ['']
@@ -30,27 +30,27 @@ module Rubber
             line << ", " + template_name
           end
         end
-        
+
         Rubber::Util.clean_indent(<<-EOS
           Prepares the rails application for deploying with rubber by installing a
           sample rubber configuration template. e.g.
-          
+
             rubber vulcanize complete_passenger_postgresql
-          
+
           where TEMPLATE is one of:
-          
+
           #{lines.join("\n")}
         EOS
         )
       end
-      
+
       option ["-f", "--force"], :flag, "Overwrite files that already exist"
       option ["-p", "--pretend"], :flag, "Run but do not make any changes"
       option ["-q", "--quiet"], :flag, "Supress status output"
       option ["-s", "--skip"], :flag, "Skip files that already exist"
-      
+
       parameter "TEMPLATE ...", "rubber template(s)" do |arg|
-        invalid = arg - VulcanizeThor.valid_templates
+        invalid = [arg] - VulcanizeThor.valid_templates
         if invalid.size == 0
           arg
         else
@@ -66,9 +66,9 @@ module Rubber
                               :skip => skip?)
         v.vulcanize(template_list)
       end
-      
+
     end
-    
+
     class VulcanizeThor < Thor
 
       include Thor::Actions
@@ -97,7 +97,7 @@ module Rubber
       # vulcanize  will be contributing
       def project_roles
         return @project_roles if @project_roles
-        
+
         # first grab all the roles from the project
         roles = []
         roles.concat Dir["#{destination_root}/config/rubber/role/*"].collect {|f| File.basename(f) }
@@ -109,7 +109,7 @@ module Rubber
           roles.concat(rubber_yml['role_dependencies'].values) rescue nil
         end
         roles << 'examples' # slight hack for collectd/munin scripts
-        
+
         # then grab all the roles from templates we are currently vulcanizing
         @template_dependencies.each do |name|
           template_dir = File.join(self.class.source_root, name, '')
@@ -120,10 +120,10 @@ module Rubber
             roles.concat(rubber_yml['role_dependencies'].values) rescue nil
           end
         end
-        
+
         @project_roles = roles.flatten.uniq
       end
-      
+
       def find_dependencies(name)
         template_dir = File.join(self.class.source_root, name, '')
         unless File.directory?(template_dir)
@@ -169,7 +169,7 @@ module Rubber
               end
             end
           end
-          
+
           # Only include optional files when their conditions eval to true
           optional = template_conf['optional'][template_rel] rescue nil
           Find.prune if optional && ! eval(optional)
